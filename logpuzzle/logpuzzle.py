@@ -17,8 +17,13 @@ Given an apache logfile, find the puzzle urls and download the images.
 
 Here's what a puzzle url looks like:
 10.254.254.28 - - [06/Aug/2007:00:13:48 -0700] "GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
-"""
 
+"""
+def sort_key(url):
+  matches = re.search(r"\-[A-Za-z]{4}\-([A-Za-z]{4}).jpg$",url)
+  if matches:
+    return matches.group(1)
+  return url
 
 def read_urls(filename):
   """Returns a list of the puzzle urls from the given log file,
@@ -42,13 +47,13 @@ def read_urls(filename):
             if server:
               full_url = "http://" + server + matches.group(1)
               url.add(full_url)
-
-      return sorted(url)
+                      
+      return sorted(url, key = sort_key)
   except Exception as e:
     print(f"Error occured: {e}")
     return []
           
- 
+    
 def download_images(img_urls, dest_dir):
   """Given the urls already in the correct order, downloads
   each image into the given directory.
