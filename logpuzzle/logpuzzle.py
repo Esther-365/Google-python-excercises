@@ -9,7 +9,8 @@
 import os
 import re
 import sys
-import urllib
+import urllib.request
+import shutil
 
 """Logpuzzle exercise
 Given an apache logfile, find the puzzle urls and download the images.
@@ -42,7 +43,7 @@ def read_urls(filename):
               full_url = "http://" + server + matches.group(1)
               url.add(full_url)
 
-      return url
+      return sorted(url)
   except Exception as e:
     print(f"Error occured: {e}")
     return []
@@ -56,8 +57,23 @@ def download_images(img_urls, dest_dir):
   with an img tag to show each local image file.
   Creates the directory if necessary.
   """
+  index = 0
   # +++your code here+++
+  try:
+    if not os.path.exists(dest_dir):
+      os.mkdir(dest_dir)
+    for img in img_urls:   
+      urllib.request.urlretrieve(img,f"{dest_dir}/img{index}")
+      index += 1
 
+    img_tags = "".join(f'<img src = "img{i}">'for i in range(index))
+    with open(f"{dest_dir}/index.html","w") as file:
+      file.write("<html>\n<body>\n")
+      file.write(img_tags)
+      file.write("\n</body>\n</html>")
+        
+  except Exception as e:
+    print(f"Error in download_images {e}")
 
 def main():
   args = sys.argv[1:]
@@ -76,7 +92,7 @@ def main():
   if todir:
     download_images(img_urls, todir)
   else:
-    print('\n'.join(sorted(img_urls)))
+    print('\n'.join(img_urls))
 
 if __name__ == '__main__':
   main()
